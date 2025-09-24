@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid grid-cols-2 gap-6 sm:grid-cols-2 lg:grid-cols-4">
 
                 <div class="p-6 overflow-hidden bg-white rounded-lg shadow-sm">
                     <h3 class="text-sm font-medium text-gray-500 truncate">Total Jenis Obat</h3>
@@ -38,10 +38,10 @@
                 </div>
 
             </div>
-            <div class="grid grid-cols-2 mt-8 overflow-hidden bg-white p-6 shadow-sm sm:rounded-lg">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 mt-8 overflow-hidden bg-white p-6 shadow-sm sm:rounded-lg">
                 <div class="mt-4" wire:ignore x-data="chartComponent(@js($salesLabels),
-                @js($salesData))" x-init="init()">
-                <h3 class="text-lg font-semibold text-gray-800">Tren Penjualan 7 Hari Terakhir</h3>
+                    @js($salesData))" x-init="init()">
+                    <h3 class="text-lg font-semibold text-gray-800">Tren Penjualan 7 Hari Terakhir</h3>
                     <canvas x-ref="chart"></canvas>
                 </div>
             </div>

@@ -18,10 +18,12 @@ class DatabaseSeeder extends Seeder
 
         // Membuat data dummy menggunakan factory
         // Pastikan Anda sudah mendefinisikan factory untuk Category, Supplier, dan Medicine
-        \App\Models\Category::factory(3)->create();
         \App\Models\Supplier::factory(2)->create();
-        \App\Models\Medicine::factory(10)->create();
+        $this->call([
+            RealisticMedicineSeeder::class,
+        ]);
         $this->call([
             TransactionSeeder::class,
-        ]);}
+        ]);
+    }
 }
