@@ -10,6 +10,7 @@ use App\Livewire\Transaction\Index as TransactionIndex;
 use App\Livewire\Purchase\Create as PurchaseCreate;
 use App\Livewire\Report\Financial as FinancialReport;
 use App\Livewire\User\Index as UserIndex;
+use App\Livewire\Log\ActivityLog;
 
 Route::view('/', 'welcome');
 Route::get('dashboard', Dashboard::class)
@@ -50,4 +51,8 @@ Route::get('reports/financial', FinancialReport::class)
 Route::get('users', UserIndex::class)
     ->middleware(['role:Admin'])
     ->name('users.index');
+
+Route::get('activity-log', ActivityLog::class)
+    ->middleware(['role:Admin'])
+    ->name('activity-log.index');
 require __DIR__ . '/auth.php';

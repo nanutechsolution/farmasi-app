@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Medicine extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -34,6 +36,7 @@ class Medicine extends Model
     protected $casts = [
         'expired_date' => 'date',
         'price' => 'decimal:2',
+        'cost_price' => 'decimal:2',
     ];
 
     /**
@@ -44,5 +47,16 @@ class Medicine extends Model
     {
         return $this->belongsTo(Category::class);
     }
-    // ---------------------------------------------
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            // Hanya catat perubahan pada kolom-kolom ini
+            ->logOnly(['name', 'stock', 'price', 'cost_price'])
+            // Tampilkan deskripsi yang mudah dibaca
+            ->setDescriptionForEvent(fn(string $eventName) => "Data obat ini telah di-{$eventName}")
+            // Kelompokkan log ini dengan nama 'Medicine'
+            ->useLogName('Medicine')
+            // Hanya catat log jika ada data yang benar-benar berubah
+            ->logOnlyDirty();
+    }
 }
