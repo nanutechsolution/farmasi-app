@@ -97,80 +97,89 @@
     </div>
 
     <x-modal name="medicine-modal" :show="$errors->isNotEmpty()" focusable>
-        <form wire:submit="save" class="p-6">
-            <h2 class="text-lg font-medium text-gray-900">
-                {{ $isEditMode ? 'Edit Data Obat' : 'Tambah Data Obat Baru' }}
+        <form wire:submit="save" class="space-y-4 p-4">
+            <h2 class="text-xl font-bold text-gray-900">
+                {{ $isEditMode ? 'Edit Obat' : 'Tambah Obat Baru' }}
             </h2>
+            <p class="text-sm text-gray-500 mb-2">
+                Isi informasi obat dengan lengkap.
+            </p>
 
-            <div class="mt-6">
-                <x-input-label for="name" value="Nama Obat" />
-                <x-text-input wire:model="name" id="name" type="text" class="block w-full mt-1" />
-                <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <!-- Nama Obat -->
+            <div class="p-3 bg-gray-50 rounded shadow-sm">
+                <x-input-label for="name" value="Nama Obat *" />
+                <x-text-input wire:model="name" id="name" type="text" placeholder="Contoh: Paracetamol" class="block w-full mt-1" />
+                <x-input-error :messages="$errors->get('name')" class="text-red-500 mt-1 text-sm" />
             </div>
-            <div class="mt-4">
+
+            <!-- Barcode -->
+            <div class="p-3 bg-gray-50 rounded shadow-sm">
                 <x-input-label for="barcode" value="Barcode (Opsional)" />
-                <x-text-input wire:model="barcode" id="barcode" type="text" class="block w-full mt-1" />
-                <x-input-error :messages="$errors->get('barcode')" class="mt-2" />
+                <x-text-input wire:model="barcode" id="barcode" type="text" placeholder="Kosongkan jika tidak ada" class="block w-full mt-1" />
+                <x-input-error :messages="$errors->get('barcode')" class="text-red-500 mt-1 text-sm" />
             </div>
-            <div class="grid grid-cols-2 gap-4 mt-4">
-                <div>
-                    <x-input-label for="category_id" value="Kategori" />
-                    <select wire:model="category_id" id="category_id" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+
+            <!-- Kategori & Stok -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="p-3 bg-gray-50 rounded shadow-sm">
+                    <x-input-label for="category_id" value="Kategori *" />
+                    <select wire:model="category_id" id="category_id" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="">Pilih Kategori</option>
                         @foreach ($categories as $category)
                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                         @endforeach
                     </select>
-                    <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
+                    <x-input-error :messages="$errors->get('category_id')" class="text-red-500 mt-1 text-sm" />
                 </div>
-                <div>
-                    <x-input-label for="stock" value="Stok" />
-                    <x-text-input wire:model="stock" id="stock" type="number" class="block w-full mt-1" />
-                    <x-input-error :messages="$errors->get('stock')" class="mt-2" />
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-4 mt-4">
-                <div>
-                    <x-input-label for="price" value="Harga Jual" />
-                    <x-text-input wire:model="price" id="price" type="number" step="100" class="block w-full mt-1" />
-                    <x-input-error :messages="$errors->get('price')" class="mt-2" />
-                </div>
-                <div>
-                    <x-input-label for="cost_price" value="Harga Beli (Modal)" />
-                    <x-text-input wire:model="cost_price" id="cost_price" type="number" step="100" class="block w-full mt-1" />
-                    <x-input-error :messages="$errors->get('cost_price')" class="mt-2" />
+                <div class="p-3 bg-gray-50 rounded shadow-sm">
+                    <x-input-label for="stock" value="Stok *" />
+                    <x-text-input wire:model="stock" id="stock" type="number" min="0" placeholder="Jumlah tersedia" class="block w-full mt-1" />
+                    <x-input-error :messages="$errors->get('stock')" class="text-red-500 mt-1 text-sm" />
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 mt-4">
-                <div>
-                    <x-input-label for="unit" value="Satuan (e.g., strip, botol)" />
-                    <x-text-input wire:model="unit" id="unit" type="text" class="block w-full mt-1" />
-                    <x-input-error :messages="$errors->get('unit')" class="mt-2" />
+            <!-- Harga & Modal -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="p-3 bg-gray-50 rounded shadow-sm">
+                    <x-input-label for="price" value="Harga Jual *" />
+                    <x-text-input wire:model="price" id="price" type="number" step="100" placeholder="5000" class="block w-full mt-1" />
+                    <x-input-error :messages="$errors->get('price')" class="text-red-500 mt-1 text-sm" />
                 </div>
-                <div>
-                    <x-input-label for="expired_date" value="Tanggal Kadaluarsa" />
+                <div class="p-3 bg-gray-50 rounded shadow-sm">
+                    <x-input-label for="cost_price" value="Harga Beli (Modal) *" />
+                    <x-text-input wire:model="cost_price" id="cost_price" type="number" step="100" placeholder="4500" class="block w-full mt-1" />
+                    <x-input-error :messages="$errors->get('cost_price')" class="text-red-500 mt-1 text-sm" />
+                </div>
+            </div>
+
+            <!-- Satuan & Tanggal Kadaluarsa -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="p-3 bg-gray-50 rounded shadow-sm">
+                    <x-input-label for="unit" value="Satuan *" />
+                    <x-text-input wire:model="unit" id="unit" type="text" placeholder="strip, botol" class="block w-full mt-1" />
+                    <x-input-error :messages="$errors->get('unit')" class="text-red-500 mt-1 text-sm" />
+                </div>
+                <div class="p-3 bg-gray-50 rounded shadow-sm">
+                    <x-input-label for="expired_date" value="Tanggal Kadaluarsa *" />
                     <x-text-input wire:model="expired_date" id="expired_date" type="date" class="block w-full mt-1" />
-                    <x-input-error :messages="$errors->get('expired_date')" class="mt-2" />
+                    <x-input-error :messages="$errors->get('expired_date')" class="text-red-500 mt-1 text-sm" />
                 </div>
             </div>
 
-            <div class="flex justify-end mt-6">
-                <x-secondary-button type="button" wire:click="closeModal">
-                    Batal
-                </x-secondary-button>
-
-                <x-primary-button class="ms-3" wire:loading.attr="disabled" wire:target="save">
-                    <svg wire:loading wire:target="save" class="w-5 h-5 mr-3 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row justify-end gap-3 mt-2">
+                <x-secondary-button type="button" wire:click="closeModal" class="w-full sm:w-auto">Batal</x-secondary-button>
+                <x-primary-button wire:loading.attr="disabled" wire:target="save" class="w-full sm:w-auto flex items-center justify-center">
+                    <svg wire:loading wire:target="save" class="w-5 h-5 mr-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     <span>{{ $isEditMode ? 'Simpan Perubahan' : 'Simpan' }}</span>
                 </x-primary-button>
             </div>
         </form>
     </x-modal>
+
 
     <x-modal name="medicine-delete-modal" focusable>
         <div class="p-6">

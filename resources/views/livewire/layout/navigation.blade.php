@@ -23,7 +23,7 @@ new class extends Component {
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-3">
                     <!-- Logo -->
                     <a href="{{ route('dashboard') }}" wire:navigate>
                         <x-application-logo class="h-9 w-auto fill-current text-gray-800" />
