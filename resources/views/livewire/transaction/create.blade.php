@@ -35,7 +35,7 @@
                                             <div class="text-sm font-semibold text-gray-900">Exp: {{ $batch->expired_date->format('d/m/Y') }}</div>
                                         </td>
                                     </tr>
-p                                    @empty
+                                    @empty
                                     <tr>
                                         <td colspan="2" class="px-6 py-4 text-center text-gray-500">
                                             @if (strlen($search) < 2) Ketik minimal 2 huruf untuk mencari... @else Obat tidak ditemukan. @endif </td>
@@ -50,8 +50,7 @@ p                                    @empty
                 <div class="lg:col-span-1">
                     <div class="p-6 bg-white shadow-sm sm:rounded-lg">
                         <h3 class="text-lg font-semibold">Keranjang</h3>
-                        <div class="mt-4 border-t border-b divide-y overflow-y-auto
-          h-auto">
+                        <div class="mt-4 border-t border-b divide-y overflow-y-auto h-auto">
                             @forelse ($cart as $id => $item)
                             <div class="flex items-center justify-between p-4">
                                 <div>
@@ -76,13 +75,13 @@ p                                    @empty
                             </div>
                             @endforelse
                         </div>
-                        <div class="pt-4 mt-4 border-t">
+                        <div class="pt-4 mt-4 ">
                             @if (session()->has('error'))
                             <div class="px-4 py-2 mb-4 text-sm text-red-800 bg-red-200 rounded">
                                 {{ session('error') }}
                             </div>
                             @endif
-                            <div class="mt-2 bg-white pt-2 border-t lg:relative lg:mt-4 space-y-2">
+                            <div class="mt-2 bg-white pt-2  lg:relative lg:mt-4 space-y-2">
                                 <div class="flex justify-between font-semibold">
                                     <span>Subtotal</span>
                                     <span>Rp {{ number_format($total, 0, ',', '.') }}</span>
