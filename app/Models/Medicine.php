@@ -60,9 +60,9 @@ class Medicine extends Model
     }
 
     public function getNextExpiryDateAttribute()
-{
-    return $this->batches()
-        ->where('quantity', '>', 0)
-        ->min('expired_date');
-}
+    {
+        return $this->batches()
+            ->where('quantity', '>', 0)
+            ->min('expired_date');
+    }
 }

@@ -81,6 +81,7 @@ new class extends Component {
                             <x-slot name="content">
                                 @can('manage-medicines')
                                 <x-dropdown-link :href="route('medicines.index')" wire:navigate>{{ __('Obat') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('categories.index')" wire:navigate>{{ __('Kategori') }}</x-dropdown-link>
                                 @endcan
                                 @can('manage-suppliers')
                                 <x-dropdown-link :href="route('suppliers.index')" wire:navigate>{{ __('Supplier') }}</x-dropdown-link>
@@ -199,10 +200,11 @@ new class extends Component {
                 </button>
                 <div x-show="openManajemen" x-transition class="pl-4">
                     @can('manage-medicines')
-                    <x-responsive-nav-link :href="route('medicines.index')">Obat</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('medicines.index')">{{ __('Obat') }}</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('categories.index')">{{ __('Kategori') }}</x-responsive-nav-link>
                     @endcan
                     @can('manage-suppliers')
-                    <x-responsive-nav-link :href="route('suppliers.index')">Supplier</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('suppliers.index')">{{ __('Supplier') }}</x-responsive-nav-link>
                     @endcan
                 </div>
             </div>
