@@ -22,79 +22,112 @@
     </div>
 
     <div class="py-6 px-2 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <x-primary-button wire:click="create">
-                        Tambah Obat
-                    </x-primary-button>
+        <div class="mx-auto max-w-7xl">
 
-                    <div class="mt-4 overflow-x-auto">
-                        <table class="min-w-full bg-white">
-                            <thead class="bg-gray-200">
-                                <tr>
-                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        <button wire:click="sortBy('name')" class="flex items-center">
-                                            Nama Obat
-                                            @if ($sortField === 'name')
-                                            <span class="ml-1">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                                            @endif
-                                        </button>
-                                    </th>
-                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        Kategori</th>
-                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        <button wire:click="sortBy('stock')" class="flex items-center">
-                                            Stok
-                                            @if ($sortField === 'stock')
-                                            <span class="ml-1">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                                            @endif
-                                        </button>
-                                    </th>
-                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        <button wire:click="sortBy('price')" class="flex items-center">
-                                            Harga
-                                            @if ($sortField === 'price')
-                                            <span class="ml-1">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                                            @endif
-                                        </button>
-                                    </th>
-                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200" wire:loading.class.delay="opacity-50">
-                                @forelse ($medicines as $medicine)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $medicine->name }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $medicine->category->name }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $medicine->stock }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">Rp
-                                        {{ number_format($medicine->price, 0, ',', '.') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <button wire:click="edit({{ $medicine->id }})" class="text-indigo-600 hover:text-indigo-900">Edit</button>
-                                        <button wire:click="confirmDelete({{ $medicine->id }})" class="ml-4 text-red-600 hover:text-red-900">Hapus</button>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500 whitespace-nowrap">
-                                        Tidak ada data obat.
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+            <!-- Tombol Tambah Obat -->
+            <div class="flex justify-end mb-4">
+                <x-primary-button wire:click="create">
+                    Tambah Obat
+                </x-primary-button>
+            </div>
 
-                    <div class="mt-4">
-                        {{ $medicines->links() }}
-                    </div>
+            <!-- Desktop Table -->
+            <div class="hidden md:block overflow-x-auto bg-white shadow-sm sm:rounded-lg">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <button wire:click="sortBy('name')" class="flex items-center space-x-1">
+                                    <span>Nama Obat</span>
+                                    @if ($sortField === 'name')
+                                    <span>{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                    @endif
+                                </button>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Kategori
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <button wire:click="sortBy('stock')" class="flex items-center space-x-1">
+                                    <span>Stok</span>
+                                    @if ($sortField === 'stock')
+                                    <span>{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                    @endif
+                                </button>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <button wire:click="sortBy('price')" class="flex items-center space-x-1">
+                                    <span>Harga</span>
+                                    @if ($sortField === 'price')
+                                    <span>{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                    @endif
+                                </button>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Aksi
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200" wire:loading.class.delay="opacity-50">
+                        @forelse ($medicines as $medicine)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $medicine->name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $medicine->category->name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $medicine->stock }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">Rp {{ number_format($medicine->price, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap flex space-x-4">
+                                <button wire:click="edit({{ $medicine->id }})" class="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                <button wire:click="confirmDelete({{ $medicine->id }})" class="text-red-600 hover:text-red-900">Hapus</button>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                Tidak ada data obat.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
 
+                <!-- Pagination -->
+                <div class="mt-4 px-6">
+                    {{ $medicines->links() }}
                 </div>
             </div>
+
+            <!-- Mobile Cards -->
+            <div class="md:hidden grid grid-cols-1 gap-4">
+                @forelse ($medicines as $medicine)
+                <div class="p-4 bg-white shadow-sm rounded-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-semibold">{{ $medicine->name }}</h3>
+                        <span class="text-sm text-gray-500">{{ $medicine->category->name }}</span>
+                    </div>
+                    <div class="flex justify-between mt-1">
+                        <span class="text-sm text-gray-600">Stok: {{ $medicine->stock }}</span>
+                        <span class="text-sm font-semibold text-gray-900">Rp {{ number_format($medicine->price, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="mt-3 flex justify-end space-x-2">
+                        <button wire:click="edit({{ $medicine->id }})" class="px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 text-sm">Edit</button>
+                        <button wire:click="confirmDelete({{ $medicine->id }})" class="px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 text-sm">Hapus</button>
+                    </div>
+                </div>
+                @empty
+                <div class="p-4 bg-white shadow-sm rounded-lg text-center text-gray-500">
+                    Tidak ada data obat.
+                </div>
+                @endforelse
+
+                <!-- Pagination -->
+                <div class="mt-4">
+                    {{ $medicines->links() }}
+                </div>
+            </div>
+
         </div>
     </div>
+
 
     <x-modal name="medicine-modal" :show="$errors->isNotEmpty()" focusable>
         <form wire:submit="save" class="space-y-4 p-4">

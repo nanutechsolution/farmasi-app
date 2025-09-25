@@ -23,12 +23,11 @@ new class extends Component {
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2">
                     <!-- Logo -->
                     <a href="{{ route('dashboard') }}" wire:navigate>
-                        <x-application-logo class="h-9 w-auto fill-current text-gray-800" />
+                        <x-application-logo class="h-9 w-auto fill-current text-gray-800 mr-2" />
                     </a>
-
                     <!-- Nama aplikasi, hanya muncul di mobile -->
                     <span class="text-lg font-semibold text-gray-800 sm:hidden">
                         Farmasi Medika
