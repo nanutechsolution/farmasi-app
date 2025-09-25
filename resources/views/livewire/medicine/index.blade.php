@@ -25,7 +25,7 @@
         <div class="mx-auto max-w-7xl">
 
             <!-- Tombol Tambah Obat -->
-            <div class="flex justify-end mb-4">
+            <div class="flex justify-start mb-4">
                 <x-primary-button wire:click="create">
                     Tambah Obat
                 </x-primary-button>
@@ -127,7 +127,6 @@
 
         </div>
     </div>
-
 
     <x-modal name="medicine-modal" :show="$errors->isNotEmpty()" focusable>
         <form wire:submit="save" class="space-y-4 p-4">
