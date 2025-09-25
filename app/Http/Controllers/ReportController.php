@@ -44,7 +44,7 @@ class ReportController extends Controller
             ->get();
 
         // 6. Siapkan data untuk Pie Chart Biaya (menggunakan API QuickChart)
-        $expenseChartUrl = '';
+        $expenseChartBase64 = '';
         $expenseByCategory = $expenses->groupBy('category')->map->sum('amount');
         if ($expenseByCategory->isNotEmpty()) {
             $chartConfig = [
@@ -83,7 +83,6 @@ class ReportController extends Controller
 
             // Konversi ke base64 agar langsung bisa ditampilkan di PDF
             $expenseChartBase64 = 'data:image/png;base64,' . base64_encode($response->body());
-            // $expenseChartUrl = 'https://quickchart.io/chart?c=' . urlencode(json_encode($chartConfig));
         }
         // Kumpulkan semua data untuk dikirim ke view
         $data = compact(
