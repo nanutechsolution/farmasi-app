@@ -38,9 +38,11 @@ new class extends Component {
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @can('create-transaction')
                     <x-nav-link :href="route('transactions.create')" :active="request()->routeIs('transactions.create')" wire:navigate>
                         {{ __('Transaksi Baru') }}
                     </x-nav-link>
+                    @endcan
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
@@ -53,9 +55,13 @@ new class extends Component {
                                 </button>
                             </x-slot>
                             <x-slot name="content">
+                                @can('create-purchase')
                                 <x-dropdown-link :href="route('purchases.create')" wire:navigate>{{ __('Pembelian Baru') }}</x-dropdown-link>
+                                @endcan
+                                @can('perform-stock-opname')
                                 <x-dropdown-link :href="route('stock-opnames.create')" wire:navigate>{{ __('Buat Stok Opname') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('stock-opnames.index')" wire:navigate>{{ __('Riwayat Stok Opname') }}</x-dropdown-link>
+                                @endcan
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -73,8 +79,12 @@ new class extends Component {
                                 </button>
                             </x-slot>
                             <x-slot name="content">
+                                @can('manage-medicines')
                                 <x-dropdown-link :href="route('medicines.index')" wire:navigate>{{ __('Obat') }}</x-dropdown-link>
+                                @endcan
+                                @can('manage-suppliers')
                                 <x-dropdown-link :href="route('suppliers.index')" wire:navigate>{{ __('Supplier') }}</x-dropdown-link>
+                                @endcan
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -92,14 +102,24 @@ new class extends Component {
                                 </button>
                             </x-slot>
                             <x-slot name="content">
+                                @can('view-reports')
                                 <x-dropdown-link :href="route('transactions.index')" wire:navigate>{{ __('Laporan Transaksi') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('reports.financial')" wire:navigate>{{ __('Laporan Keuangan') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('reports.stock-analysis')" wire:navigate>{{ __('Analisis Stok') }}</x-dropdown-link>
+                                @endcan
+                                @can('manage-expenses')
                                 <x-dropdown-link :href="route('expenses.index')" wire:navigate>{{ __('Biaya Operasional') }}</x-dropdown-link>
-                                @role('Admin')
+                                @endcan
                                 <div class="border-t border-gray-200"></div>
+                                @can('manage-users')
                                 <x-dropdown-link :href="route('users.index')" wire:navigate>{{ __('Manajemen User') }}</x-dropdown-link>
+                                @endcan
+                                @can('manage-roles')
+                                <x-dropdown-link :href="route('roles.index')" wire:navigate>{{ __('Manajemen Role') }}</x-dropdown-link>
+                                @endcan
+                                @can('view-activity-log')
                                 <x-dropdown-link :href="route('activity-log.index')" wire:navigate>{{ __('Log Aktivitas') }}</x-dropdown-link>
-                                @endrole
+                                @endcan
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -153,16 +173,22 @@ new class extends Component {
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 {{ __('Dashboard') }}</x-responsive-nav-link>
+            @can('create-transaction')
             <x-responsive-nav-link :href="route('transactions.create')" wire:navigate>{{ __('Transaksi Baru') }}</x-responsive-nav-link>
+            @endcan
             <!-- Mobile Inventaris -->
             <div wire:ignore>
                 <button @click="openInventaris = !openInventaris" class="w-full text-left px-4 py-2 font-medium text-gray-700">
                     Inventaris
                 </button>
                 <div x-show="openInventaris" x-transition class="pl-4">
+                    @can('create-purchase')
                     <x-responsive-nav-link :href="route('purchases.create')">Pembelian Baru</x-responsive-nav-link>
+                    @endcan
+                    @can('perform-stock-opname')
                     <x-responsive-nav-link :href="route('stock-opnames.create')">Buat Stok Opname</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('stock-opnames.index')">Riwayat Stok Opname</x-responsive-nav-link>
+                    @endcan
                 </div>
             </div>
 
@@ -172,8 +198,12 @@ new class extends Component {
                     Manajemen Data
                 </button>
                 <div x-show="openManajemen" x-transition class="pl-4">
+                    @can('manage-medicines')
                     <x-responsive-nav-link :href="route('medicines.index')">Obat</x-responsive-nav-link>
+                    @endcan
+                    @can('manage-suppliers')
                     <x-responsive-nav-link :href="route('suppliers.index')">Supplier</x-responsive-nav-link>
+                    @endcan
                 </div>
             </div>
 
@@ -183,13 +213,22 @@ new class extends Component {
                     Laporan & Admin
                 </button>
                 <div x-show="openLaporan" x-transition class="pl-4">
+                    @can('view-reports')
                     <x-responsive-nav-link :href="route('transactions.index')">Laporan Transaksi</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('reports.financial')">Laporan Keuangan</x-responsive-nav-link>
+                    @endcan
+                    @can('manage-expenses')
                     <x-responsive-nav-link :href="route('expenses.index')">Biaya Operasional</x-responsive-nav-link>
-                    @role('Admin')
+                    @endcan
+                    @can('manage-users')
                     <x-responsive-nav-link :href="route('users.index')">Manajemen User</x-responsive-nav-link>
+                    @endcan
+                    @can('manage-roles')
+                    <x-responsive-nav-link :href="route('roles.index')">Manajemen Role</x-responsive-nav-link>
+                    @endcan
+                    @can('view-activity-log')
                     <x-responsive-nav-link :href="route('activity-log.index')">Log Aktivitas</x-responsive-nav-link>
-                    @endrole
+                    @endcan
                 </div>
             </div>
         </div>
