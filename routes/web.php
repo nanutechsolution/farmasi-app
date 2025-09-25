@@ -20,6 +20,11 @@ use App\Livewire\Expense\Index as ExpenseIndex;
 use App\Livewire\Role\Index as RoleIndex;
 use App\Livewire\Purchase\PriceAssistant;
 use App\Livewire\Category\Index as CategoryIndex;
+use App\Livewire\Setting\Index as SettingIndex;
+
+
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -66,12 +71,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('medicines/print-labels', [ReportController::class, 'printBarcodeLabels'])
         ->middleware(['permission:manage-medicines'])
         ->name('medicines.print-labels');
+
     Route::get('purchases/{purchase}/price-assistant', PriceAssistant::class)
         ->middleware(['role:Admin|Apoteker'])
         ->name('purchases.price-assistant');
     Route::get('categories', CategoryIndex::class)
         ->middleware(['permission:manage-medicines'])
         ->name('categories.index');
+
+    Route::get('settings', SettingIndex::class)
+        ->middleware(['role:Admin'])
+        ->name('settings.index');
 });
 // Route otentikasi (login, register, dll.)
 require __DIR__ . '/auth.php';

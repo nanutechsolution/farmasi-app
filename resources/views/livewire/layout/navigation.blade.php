@@ -118,6 +118,10 @@ new class extends Component {
                                 @can('manage-roles')
                                 <x-dropdown-link :href="route('roles.index')" wire:navigate>{{ __('Manajemen Role') }}</x-dropdown-link>
                                 @endcan
+                                @role('Admin')
+                                <div class="border-t border-gray-200"></div>
+                                <x-dropdown-link :href="route('settings.index')" wire:navigate>{{ __('Pengaturan Aplikasi') }}</x-dropdown-link>
+                                @endrole
                                 @can('view-activity-log')
                                 <x-dropdown-link :href="route('activity-log.index')" wire:navigate>{{ __('Log Aktivitas') }}</x-dropdown-link>
                                 @endcan

@@ -55,15 +55,16 @@
             text-align: center;
             margin-top: 20px;
         }
+
     </style>
 </head>
 
 <body>
     <div class="container">
         <div class="header">
-            <h1>Apotek Sehat Selalu</h1>
-            <p>Jl. Kesehatan No. 123, Kota Bahagia</p>
-            <p>Telp: (021) 555-1234</p>
+            <h1>{{ setting('app_name', 'Farmasi App') }}</h1>
+            <p>{{ setting('app_address', 'Alamat Anda') }}</p>
+            <p>Telp: {{ setting('app_phone', 'Telepon Anda') }}</p>
         </div>
         <hr>
         <div>
@@ -84,12 +85,12 @@
                 </thead>
                 <tbody>
                     @foreach ($transaction->details as $detail)
-                        <tr class="item-row">
-                            <td>{{ $detail->medicine->name }}</td>
-                            <td style="text-align:center;">{{ $detail->quantity }}</td>
-                            <td style="text-align:right;">{{ number_format($detail->price) }}</td>
-                            <td style="text-align:right;">{{ number_format($detail->price * $detail->quantity) }}</td>
-                        </tr>
+                    <tr class="item-row">
+                        <td>{{ $detail->medicine->name }}</td>
+                        <td style="text-align:center;">{{ $detail->quantity }}</td>
+                        <td style="text-align:right;">{{ number_format($detail->price) }}</td>
+                        <td style="text-align:right;">{{ number_format($detail->price * $detail->quantity) }}</td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
