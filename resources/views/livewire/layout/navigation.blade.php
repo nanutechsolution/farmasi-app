@@ -15,7 +15,9 @@ new class extends Component {
     }
 }; ?>
 
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100  sticky top-0 z-50">
+<nav x-data="{ open: false, openInventaris: false,
+    openManajemen: false,
+    openLaporan: false  }" class="bg-white border-b border-gray-100  sticky top-0 z-50">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -141,11 +143,49 @@ new class extends Component {
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
+    <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
+                {{ __('Dashboard') }}</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('transactions.create')" wire:navigate>{{ __('Transaksi Baru') }}</x-responsive-nav-link>
+            <!-- Mobile Inventaris -->
+            <div wire:ignore>
+                <button @click="openInventaris = !openInventaris" class="w-full text-left px-4 py-2 font-medium text-gray-700">
+                    Inventaris
+                </button>
+                <div x-show="openInventaris" x-transition class="pl-4">
+                    <x-responsive-nav-link :href="route('purchases.create')">Pembelian Baru</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('stock-opnames.create')">Buat Stok Opname</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('stock-opnames.index')">Riwayat Stok Opname</x-responsive-nav-link>
+                </div>
+            </div>
+
+            <!-- Mobile Manajemen Data -->
+ <div wire:ignore>
+                <button @click="openManajemen = !openManajemen" class="w-full text-left px-4 py-2 font-medium text-gray-700">
+                    Manajemen Data
+                </button>
+                <div x-show="openManajemen" x-transition class="pl-4">
+                    <x-responsive-nav-link :href="route('medicines.index')">Obat</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('suppliers.index')">Supplier</x-responsive-nav-link>
+                </div>
+            </div>
+
+            <!-- Mobile Laporan & Admin -->
+            <div wire:ignore>
+                <button @click="openLaporan = !openLaporan" class="w-full text-left px-4 py-2 font-medium text-gray-700">
+                    Laporan & Admin
+                </button>
+                <div x-show="openLaporan" x-transition class="pl-4">
+                    <x-responsive-nav-link :href="route('transactions.index')">Laporan Transaksi</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('reports.financial')">Laporan Keuangan</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('expenses.index')">Biaya Operasional</x-responsive-nav-link>
+                    @role('Admin')
+                    <x-responsive-nav-link :href="route('users.index')">Manajemen User</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('activity-log.index')">Log Aktivitas</x-responsive-nav-link>
+                    @endrole
+                </div>
+            </div>
         </div>
 
         <!-- Responsive Settings Options -->
