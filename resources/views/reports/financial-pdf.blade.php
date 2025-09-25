@@ -154,8 +154,8 @@
 
         <h2>Visualisasi Biaya Operasional</h2>
         <div class="chart">
-            @if(!empty($expenseChartUrl))
-            <img src="{{ $expenseChartUrl }}" alt="Grafik Biaya" style="max-width: 50%; height: auto; border: 1px solid #ddd; padding: 6px; border-radius: 6px;">
+            @if(!empty($expenseChartBase64))
+            <img src="{{ $expenseChartBase64 }}" alt="Grafik Biaya" style="max-width: 50%; height: auto; border: 1px solid #ddd; padding: 6px; border-radius: 6px;">
             @else
             <p><em>Tidak ada data biaya untuk ditampilkan.</em></p>
             @endif
