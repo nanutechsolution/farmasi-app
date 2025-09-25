@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Medicine;
+use App\Models\MedicineBatch;
 use App\Models\Supplier;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
@@ -12,18 +13,18 @@ use Livewire\Attributes\Layout;
 #[Layout('layouts.app')]
 class Dashboard extends Component
 {
-    // app/Livewire/Dashboard.php
 
     public function render()
     {
         // --- Statistik untuk Kartu (Tidak Berubah) ---
         $medicineCount = Medicine::count();
         $supplierCount = Supplier::count();
-        $lowStockCount = Medicine::where('stock', '<=', 10)->count();
-        $expiringSoonCount = Medicine::where('expired_date', '<=', now()->addDays(30))->count();
-
-        // --- LOGIKA BARU YANG LEBIH AMAN UNTUK GRAFIK ---
-
+        $lowStockCount = Medicine::with('batches')->get()->filter(function ($medicine) {
+            return $medicine->total_stock <= 10;
+        })->count();
+        $expiringSoonCount = MedicineBatch::where('quantity', '>', 0)
+            ->whereBetween('expired_date', [now()->toDateString(), now()->addDays(30)->toDateString()])
+            ->count();
         // 1. Ambil data mentah seperti sebelumnya, tapi kita buat 'date' sebagai key
         $salesDataRaw = Transaction::where('created_at', '>=', now()->subDays(6)) // Ambil 7 hari termasuk hari ini
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(total_amount) as total'))

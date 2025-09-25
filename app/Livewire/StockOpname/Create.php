@@ -3,6 +3,7 @@
 namespace App\Livewire\StockOpname;
 
 use App\Models\Medicine;
+use App\Models\MedicineBatch;
 use App\Models\StockOpname;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -26,8 +27,9 @@ class Create extends Component
             return;
         }
 
-        DB::transaction(function () {
-            // 1. Buat record utama Stok Opname
+        $affectedMedicineIds = [];
+
+        DB::transaction(function () use (&$affectedMedicineIds) {
             $stockOpname = StockOpname::create([
                 'user_id' => Auth::id(),
                 'opname_date' => now(),
@@ -35,42 +37,59 @@ class Create extends Component
                 'status' => 'completed',
             ]);
 
-            // 2. Loop melalui item yang dihitung & simpan detailnya
-            foreach ($this->physicalStocks as $medicineId => $physicalStock) {
-                // Konversi input kosong menjadi 0
-                $physicalStock = $physicalStock === '' ? 0 : (int)$physicalStock;
+            foreach ($this->physicalStocks as $batchId => $physicalStock) {
+                if ($physicalStock === '' || is_null($physicalStock)) continue;
 
-                $medicine = Medicine::find($medicineId);
-                if ($medicine) {
-                    $systemStock = $medicine->stock;
+                $physicalStock = (int)$physicalStock;
+                $batch = MedicineBatch::find($batchId);
+
+                if ($batch) {
+                    $systemStock = $batch->quantity;
                     $difference = $physicalStock - $systemStock;
 
-                    // Buat record detail
                     $stockOpname->details()->create([
-                        'medicine_id' => $medicineId,
+                        'medicine_id' => $batch->medicine_id,
                         'system_stock' => $systemStock,
                         'physical_stock' => $physicalStock,
                         'difference' => $difference,
                     ]);
 
-                    // 3. Update stok di tabel medicines
-                    $medicine->update(['stock' => $physicalStock]);
+                    // Update stok di batch yang spesifik
+                    $batch->update(['quantity' => $physicalStock]);
+
+                    // Kumpulkan ID obat induknya untuk dihitung ulang nanti
+                    if(!in_array($batch->medicine_id, $affectedMedicineIds)) {
+                        $affectedMedicineIds[] = $batch->medicine_id;
+                    }
+                }
+            }
+
+            // Hitung ulang harga modal rata-rata untuk setiap obat yang stoknya berubah
+            foreach ($affectedMedicineIds as $medicineId) {
+                $medicine = Medicine::with('batches')->find($medicineId);
+                if ($medicine) {
+                    $totalStock = $medicine->batches->sum('quantity');
+                    $totalValue = $medicine->batches->sum(fn ($batch) => $batch->quantity * $batch->purchase_price);
+                    $newAverageCost = ($totalStock > 0) ? $totalValue / $totalStock : 0;
+                    $medicine->update(['cost_price' => $newAverageCost]);
                 }
             }
         });
 
         session()->flash('success', 'Hasil stok opname berhasil disimpan dan stok telah disesuaikan.');
-        return redirect()->route('medicines.index');
+        return redirect()->route('stock-opnames.index');
     }
 
     public function render()
     {
-        $medicines = Medicine::where('name', 'like', '%' . $this->search . '%')
-            ->orderBy('name', 'asc')
-            ->paginate(10);
+        // Query sekarang ke tabel medicine_batches
+        $batches = MedicineBatch::with('medicine')
+            ->whereHas('medicine', fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
+            ->orderBy('expired_date', 'asc')
+            ->paginate(15);
 
         return view('livewire.stock-opname.create', [
-            'medicines' => $medicines,
+            'batches' => $batches,
         ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Livewire\Purchase;
 
 use App\Models\Medicine;
+use App\Models\MedicineBatch;
 use App\Models\Purchase;
 use App\Models\Supplier;
 use Illuminate\Support\Facades\Auth;
@@ -20,110 +21,101 @@ class Create extends Component
     public $purchaseList = [];
     public $total = 0;
 
-    // Inisialisasi data supplier saat komponen dimuat
     public function mount()
     {
         $this->suppliers = Supplier::all();
     }
 
-    // Method untuk menambah obat ke daftar pembelian
+    // Mengubah cara item ditambahkan ke list
     public function addToList(Medicine $medicine)
     {
-        if (isset($this->purchaseList[$medicine->id])) {
-            $this->purchaseList[$medicine->id]['quantity']++;
-        } else {
-            $this->purchaseList[$medicine->id] = [
-                'medicine_id' => $medicine->id,
-                'name' => $medicine->name,
-                'purchase_price' => $medicine->price, // Harga beli awal = harga jual
-                'quantity' => 1,
-            ];
-        }
+        // Sekarang kita bisa menambahkan obat yang sama berkali-kali (untuk batch berbeda)
+        $this->purchaseList[] = [
+            'medicine_id' => $medicine->id,
+            'name' => $medicine->name,
+            'batch_number' => '',
+            'quantity' => 1,
+            'purchase_price' => $medicine->cost_price, // Harga beli awal kita samakan dgn harga jual
+            'expired_date' => now()->addYear()->toDateString(),
+        ];
         $this->calculateTotal();
         $this->search = '';
     }
 
-    // Method untuk menghapus item dari daftar
-    public function removeFromList($medicineId)
+    public function removeFromList($index)
     {
-        unset($this->purchaseList[$medicineId]);
+        unset($this->purchaseList[$index]);
+        $this->purchaseList = array_values($this->purchaseList);
         $this->calculateTotal();
     }
 
-    // Method untuk mengupdate kuantitas atau harga beli
-    public function updatedPurchaseList($value, $key)
+    public function updatedPurchaseList()
     {
-        $keys = explode('.', $key);
-        $id = $keys[0];
-        $field = $keys[1];
-        if ($value === '') {
-            $this->purchaseList[$id][$field] = 0;
-        }
-
         $this->calculateTotal();
     }
 
-    // Method untuk menghitung total
     private function calculateTotal()
     {
         $this->total = collect($this->purchaseList)->sum(function ($item) {
-            return (float)$item['purchase_price'] * (int)$item['quantity'];
+            $price = is_numeric($item['purchase_price']) ? (float)$item['purchase_price'] : 0;
+            $quantity = is_numeric($item['quantity']) ? (int)$item['quantity'] : 0;
+            return $price * $quantity;
         });
     }
 
-    // app/Livewire/Purchase/Create.php
-
+    // Logika penyimpanan diubah total untuk menyimpan batch
     public function savePurchase()
     {
         $this->validate([
             'supplier_id' => 'required|exists:suppliers,id',
-            'purchaseList' => 'required|array|min:1'
+            'purchaseList' => 'required|array|min:1',
+            'purchaseList.*.quantity' => 'required|integer|min:1',
+            'purchaseList.*.purchase_price' => 'required|numeric|min:0',
+            'purchaseList.*.expired_date' => 'required|date',
         ]);
-
-        // Memulai transaksi database untuk memastikan semua proses berhasil
-        DB::transaction(function () {
-            // Buat record pembelian utama
+        $purchase = DB::transaction(function () {
             $purchase = Purchase::create([
                 'supplier_id' => $this->supplier_id,
                 'user_id' => Auth::id(),
                 'total_amount' => $this->total,
             ]);
-
-            // Loop untuk setiap item dalam daftar pembelian
+            $affectedMedicineIds = collect($this->purchaseList)->pluck('medicine_id')->unique();
             foreach ($this->purchaseList as $item) {
-                // Simpan detail pembelian
+                // Buat detail pembelian
                 $purchase->details()->create($item);
 
-                $medicine = Medicine::find($item['medicine_id']);
-
-                // --- Logika Harga Rata-Rata (Moving Average) ---
-
-                // 1. Ambil data lama sebelum diubah
-                $oldStock = $medicine->stock;
-                $oldCost = $medicine->cost_price;
-
-                // 2. Ambil data baru dari form pembelian
-                $newStock = $item['quantity'];
-                $newCost = $item['purchase_price'];
-
-                // 3. Hitung total stok baru
-                $totalStock = $oldStock + $newStock;
-
-                // 4. Hitung harga rata-rata baru (pastikan tidak ada pembagian dengan nol)
-                $newAverageCost = ($totalStock > 0)
-                    ? (($oldStock * $oldCost) + ($newStock * $newCost)) / $totalStock
-                    : $newCost;
-
-                // 5. Update stok dan harga modal obat dengan nilai baru
-                $medicine->update([
-                    'stock' => $totalStock,
-                    'cost_price' => $newAverageCost,
+                // BUAT RECORD BATCH BARU, BUKAN LAGI MENAMBAH STOK
+                MedicineBatch::create([
+                    'medicine_id' => $item['medicine_id'],
+                    'batch_number' => $item['batch_number'],
+                    'quantity' => $item['quantity'],
+                    'purchase_price' => $item['purchase_price'],
+                    'expired_date' => $item['expired_date'],
                 ]);
             }
+
+            foreach ($affectedMedicineIds as $medicineId) {
+                $medicine = Medicine::with('batches')->find($medicineId);
+
+                if ($medicine) {
+                    $totalStock = $medicine->batches->sum('quantity');
+                    $totalValue = $medicine->batches->sum(function ($batch) {
+                        return $batch->quantity * $batch->purchase_price;
+                    });
+
+                    $newAverageCost = ($totalStock > 0) ? $totalValue / $totalStock : 0;
+
+                    // Update cost_price di tabel medicines
+                    $medicine->update(['cost_price' => $newAverageCost]);
+                }
+            }
+
+            return $purchase;
         });
 
-        session()->flash('success', 'Data pembelian berhasil disimpan.');
-        return redirect()->route('medicines.index');
+        session()->flash('success', 'Data pembelian & batch berhasil disimpan.');
+        // Kita arahkan ke halaman obat untuk melihat efeknya nanti
+        return redirect()->route('purchases.price-assistant', $purchase);
     }
 
     public function render()

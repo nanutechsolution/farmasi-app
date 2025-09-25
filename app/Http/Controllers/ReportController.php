@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MedicinesExport;
 use App\Models\Expense;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Maatwebsite\Excel\Facades\Excel;
+use Milon\Barcode\Facades\DNS1DFacade as DNS1D;
+use App\Models\Medicine;
+use Illuminate\Http\Request;
+
 
 class ReportController extends Controller
 {
@@ -102,5 +107,33 @@ class ReportController extends Controller
         $pdf = Pdf::loadView('reports.financial-pdf', $data);
         $pdf->setOption('isRemoteEnabled', true);
         return $pdf->stream('laporan-keuangan-' . $startDate . '-' . $endDate . '.pdf');
+    }
+
+
+    public function exportMedicines()
+    {
+        return Excel::download(new MedicinesExport, 'daftar-obat-' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function printBarcodeLabels(Request $request)
+    {
+        $medicineIds = explode(',', $request->query('medicines', ''));
+        if (empty($medicineIds) || empty($medicineIds[0])) {
+            return back()->with('error', 'Pilih setidaknya satu obat untuk dicetak.');
+        }
+
+        $medicines = Medicine::whereIn('id', $medicineIds)->get();
+        $barcodes = [];
+
+        foreach ($medicines as $medicine) {
+            if ($medicine->barcode) {
+                $barcodes[$medicine->id] = DNS1D::getBarcodePNG($medicine->barcode, 'C128', 2, 40);
+            }
+        }
+
+        $pdf = Pdf::loadView('labels.barcode-pdf', compact('medicines', 'barcodes'));
+        // Set ukuran kertas thermal 58mm x 40mm
+        // $pdf->setPaper([0, 0, 164, 113]);
+        return $pdf->stream('barcode-labels.pdf');
     }
 }

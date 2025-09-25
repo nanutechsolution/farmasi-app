@@ -1,4 +1,21 @@
-<div>
+<div x-data="{
+    selected: @entangle('selectedMedicines'),
+    paginatedIds: @json($paginatedMedicineIds),
+    get allSelected() {
+        return this.paginatedIds.length > 0 && this.paginatedIds.every(id => this.selected.includes(id));
+    },
+    toggleAll() {
+        if (this.allSelected) {
+            this.selected = this.selected.filter(id => !this.paginatedIds.includes(id));
+        } else {
+            this.paginatedIds.forEach(id => {
+                if (!this.selected.includes(id)) {
+                    this.selected.push(id);
+                }
+            });
+        }
+    }
+}">
     <x-slot name="header">
         <h2 class="text-xl font-semibold leading-tight text-gray-800">
             {{ __('Manajemen Obat') }}
@@ -23,12 +40,15 @@
 
     <div class="py-6 px-2 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-7xl">
-
-            <!-- Tombol Tambah Obat -->
-            <div class="flex justify-start mb-4">
-                <x-primary-button wire:click="create">
-                    Tambah Obat
-                </x-primary-button>
+            <div class="flex items-center space-x-4 mb-4">
+                <x-primary-button wire:click="create">Tambah Obat</x-primary-button>
+                <a href="{{ route('medicines.export') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    Ekspor ke Excel
+                </a>
+                <x-secondary-button wire:click="openImportModal">Impor dari Excel</x-secondary-button>
+                <a x-bind:href="'{{ route('medicines.print-labels') }}?medicines=' + selected.join(',')" x-bind:class="{ 'opacity-50 cursor-not-allowed': selected.length === 0 }" x-on:click="if (selected.length === 0) $event.preventDefault()" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-500 active:bg-gray-700">
+                    Cetak Label Terpilih (<span x-text="selected.length"></span>)
+                </a>
             </div>
 
             <!-- Desktop Table -->
@@ -36,6 +56,9 @@
                 <table class="min-w-full bg-white">
                     <thead class="bg-gray-200">
                         <tr>
+                            <th class="px-2 py-3 text-left">
+                                <input type="checkbox" x-on:click="toggleAll()" x-bind:checked="allSelected" class="rounded">
+                            </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <button wire:click="sortBy('name')" class="flex items-center space-x-1">
                                     <span>Nama Obat</span>
@@ -48,12 +71,7 @@
                                 Kategori
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <button wire:click="sortBy('stock')" class="flex items-center space-x-1">
-                                    <span>Stok</span>
-                                    @if ($sortField === 'stock')
-                                    <span>{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                                    @endif
-                                </button>
+                                <span>Total Stok</span>
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <button wire:click="sortBy('price')" class="flex items-center space-x-1">
@@ -71,9 +89,10 @@
                     <tbody class="divide-y divide-gray-200" wire:loading.class.delay="opacity-50">
                         @forelse ($medicines as $medicine)
                         <tr>
+                            <td class="px-2 py-4"><input type="checkbox" wire:model.live="selectedMedicines" value="{{ $medicine->id }}"></td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $medicine->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $medicine->category->name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $medicine->stock }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $medicine->total_stock }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">Rp {{ number_format($medicine->price, 0, ',', '.') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap flex space-x-4">
                                 <button wire:click="edit({{ $medicine->id }})" class="text-indigo-600 hover:text-indigo-900">Edit</button>
@@ -127,7 +146,30 @@
 
         </div>
     </div>
-
+    <x-modal name="import-modal" focusable>
+        <form wire:submit="importExcel" class="p-6">
+            <h2 class="text-lg font-medium text-gray-900">
+                Impor Data Obat
+            </h2>
+            <p class="mt-1 text-sm text-gray-600">
+                Unggah file Excel (.xlsx) dengan format kolom yang sesuai. Gunakan file hasil ekspor sebagai template.
+            </p>
+            <div class="mt-6">
+                <x-input-label for="uploadFile" value="File Excel" />
+                <x-text-input wire:model="uploadFile" id="uploadFile" name="uploadFile" type="file" class="block w-full mt-1" />
+                <div wire:loading wire:target="uploadFile" class="mt-2 text-sm text-gray-500">Mengunggah file...</div>
+                <x-input-error :messages="$errors->get('uploadFile')" class="mt-2" />
+            </div>
+            <div class="flex justify-end mt-6">
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
+                    Batal
+                </x-secondary-button>
+                <x-primary-button class="ms-3">
+                    Impor
+                </x-primary-button>
+            </div>
+        </form>
+    </x-modal>
     <x-modal name="medicine-modal" :show="$errors->isNotEmpty()" focusable>
         <form wire:submit="save" class="space-y-4 p-4">
             <h2 class="text-xl font-bold text-gray-900">
@@ -136,7 +178,6 @@
             <p class="text-sm text-gray-500 mb-2">
                 Isi informasi obat dengan lengkap.
             </p>
-
             <!-- Nama Obat -->
             <div class="p-3 bg-gray-50 rounded shadow-sm">
                 <x-input-label for="name" value="Nama Obat *" />
@@ -152,7 +193,7 @@
             </div>
 
             <!-- Kategori & Stok -->
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3">
                 <div class="p-3 bg-gray-50 rounded shadow-sm">
                     <x-input-label for="category_id" value="Kategori *" />
                     <select wire:model="category_id" id="category_id" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
@@ -163,13 +204,7 @@
                     </select>
                     <x-input-error :messages="$errors->get('category_id')" class="text-red-500 mt-1 text-sm" />
                 </div>
-                <div class="p-3 bg-gray-50 rounded shadow-sm">
-                    <x-input-label for="stock" value="Stok *" />
-                    <x-text-input wire:model="stock" id="stock" type="number" min="0" placeholder="Jumlah tersedia" class="block w-full mt-1" />
-                    <x-input-error :messages="$errors->get('stock')" class="text-red-500 mt-1 text-sm" />
-                </div>
             </div>
-
             <!-- Harga & Modal -->
             <div class="grid grid-cols-2 gap-3">
                 <div class="p-3 bg-gray-50 rounded shadow-sm">
@@ -178,13 +213,11 @@
                     <x-input-error :messages="$errors->get('price')" class="text-red-500 mt-1 text-sm" />
                 </div>
                 <div class="p-3 bg-gray-50 rounded shadow-sm">
-                    <x-input-label for="cost_price" value="Harga Beli (Modal) *" />
-                    <x-text-input wire:model="cost_price" id="cost_price" type="number" step="100" placeholder="4500" class="block w-full mt-1" />
-                    <x-input-error :messages="$errors->get('cost_price')" class="text-red-500 mt-1 text-sm" />
+                    <x-input-label for="margin" value="Margin Laba (%)" />
+                    <x-text-input wire:model="margin" id="margin" type="number" class="w-full mt-1" placeholder="Contoh: 30" />
+                    <x-input-error :messages="$errors->get('margin')" class="mt-2" />
                 </div>
             </div>
-
-            <!-- Satuan & Tanggal Kadaluarsa -->
             <div class="grid grid-cols-2 gap-3">
                 <div class="p-3 bg-gray-50 rounded shadow-sm">
                     <x-input-label for="unit" value="Satuan *" />
@@ -192,12 +225,11 @@
                     <x-input-error :messages="$errors->get('unit')" class="text-red-500 mt-1 text-sm" />
                 </div>
                 <div class="p-3 bg-gray-50 rounded shadow-sm">
-                    <x-input-label for="expired_date" value="Tanggal Kadaluarsa *" />
-                    <x-text-input wire:model="expired_date" id="expired_date" type="date" class="block w-full mt-1" />
-                    <x-input-error :messages="$errors->get('expired_date')" class="text-red-500 mt-1 text-sm" />
+                    <x-input-label for="cost_price" value="Harga Beli (Modal)" />
+                    <x-text-input wire:model="cost_price" id="cost_price" type="number" step="100" class="block w-full mt-1" />
+                    <x-input-error :messages="$errors->get('cost_price')" class="mt-1 text-red-500 text-sm" />
                 </div>
             </div>
-
             <!-- Buttons -->
             <div class="flex flex-col sm:flex-row justify-end gap-3 mt-2">
                 <x-secondary-button type="button" wire:click="closeModal" class="w-full sm:w-auto">Batal</x-secondary-button>

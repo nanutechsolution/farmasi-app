@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             RealisticMedicineSeeder::class,
         ]);
         $this->call([
-            TransactionSeeder::class,
+            // TransactionSeeder::class,
         ]);
     }
 }

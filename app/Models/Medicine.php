@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -21,22 +22,10 @@ class Medicine extends Model
         'name',
         'barcode',
         'category_id',
-        'stock',
         'price',
         'cost_price',
-        'unit',
-        'expired_date',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'expired_date' => 'date',
-        'price' => 'decimal:2',
-        'cost_price' => 'decimal:2',
+        'margin',
+        'unit'
     ];
 
     /**
@@ -58,5 +47,15 @@ class Medicine extends Model
             ->useLogName('Medicine')
             // Hanya catat log jika ada data yang benar-benar berubah
             ->logOnlyDirty();
+    }
+
+    public function batches(): HasMany
+    {
+        return $this->hasMany(MedicineBatch::class);
+    }
+
+    public function getTotalStockAttribute(): int
+    {
+        return $this->batches()->sum('quantity');
     }
 }

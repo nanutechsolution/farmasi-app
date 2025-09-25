@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use App\Models\MedicineBatch;
 
 #[Layout('layouts.app')]
 class Create extends Component
@@ -16,32 +17,33 @@ class Create extends Component
     public $cart = [];
     public $total = 0;
 
-    // -- PROPERTI BARU --
     public $paid_amount = 0;
     public $change = 0;
 
-    // Method addToCart, incrementQuantity, decrementQuantity, removeFromCart (Tidak berubah)
-    public function addToCart($id)
+    public function addToCart($batchId)
     {
-        $medicine = Medicine::find($id);
-        if (!$medicine || $medicine->stock <= 0) return;
+        $batch = MedicineBatch::with('medicine')->find($batchId);
+        if (!$batch || $batch->quantity <= 0) return;
 
-        if (isset($this->cart[$id])) {
-            if ($this->cart[$id]['quantity'] < $medicine->stock) {
-                $this->cart[$id]['quantity']++;
+        // Kunci keranjang sekarang adalah ID BATCH
+        if (isset($this->cart[$batchId])) {
+            if ($this->cart[$batchId]['quantity'] < $batch->quantity) {
+                $this->cart[$batchId]['quantity']++;
             }
         } else {
-            $this->cart[$id] = [
-                'medicine_id' => $medicine->id,
-                'name' => $medicine->name,
-                'price' => $medicine->price,
-                'stock' => $medicine->stock,
+            $this->cart[$batchId] = [
+                'medicine_id' => $batch->medicine_id,
+                'batch_id' => $batch->id,
+                'name' => $batch->medicine->name . ' (Exp: ' . $batch->expired_date->format('d/m/Y') . ')',
+                'price' => $batch->medicine->price,
+                'stock' => $batch->quantity, // Stok spesifik batch ini
                 'quantity' => 1,
             ];
         }
         $this->calculateTotal();
         $this->search = '';
     }
+
     public function incrementQuantity($id)
     {
         if ($this->cart[$id]['quantity'] < $this->cart[$id]['stock']) {
@@ -79,11 +81,8 @@ class Create extends Component
     {
         $this->change = $this->paid_amount - $this->total;
     }
-
-    // -- METHOD BARU: untuk memproses dan menyimpan transaksi --
     public function processTransaction()
     {
-        // Validasi
         if (empty($this->cart)) {
             session()->flash('error', 'Keranjang tidak boleh kosong.');
             return;
@@ -94,7 +93,6 @@ class Create extends Component
         }
 
         DB::transaction(function () {
-            // 1. Buat record transaksi utama
             $transaction = Transaction::create([
                 'invoice_number' => 'INV-' . time(),
                 'user_id' => Auth::id(),
@@ -102,16 +100,16 @@ class Create extends Component
                 'paid_amount' => $this->paid_amount,
             ]);
 
-            // 2. Buat record detail transaksi & kurangi stok
             foreach ($this->cart as $item) {
                 $transaction->details()->create([
                     'medicine_id' => $item['medicine_id'],
+                    'medicine_batch_id' => $item['batch_id'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                 ]);
 
-                // Kurangi stok obat
-                Medicine::find($item['medicine_id'])->decrement('stock', $item['quantity']);
+                // Kurangi stok dari BATCH yang spesifik
+                MedicineBatch::find($item['batch_id'])->decrement('quantity', $item['quantity']);
             }
         });
 
@@ -148,13 +146,18 @@ class Create extends Component
 
     public function render()
     {
-        $medicines = [];
+        $batches = [];
         if (strlen($this->search) >= 2) {
-            $medicines = Medicine::where('name', 'like', '%' . $this->search . '%')
-                ->where('stock', '>', 0)
+            $batches = MedicineBatch::with('medicine')
+                ->whereHas('medicine', fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
+                ->where('quantity', '>', 0)
+                ->whereDate('expired_date', '>', now()) // Hanya tampilkan yg belum kadaluarsa
+                ->orderBy('expired_date', 'asc') // Urutkan agar yg cepat expired muncul duluan
                 ->take(10)
                 ->get();
         }
-        return view('livewire.transaction.create', compact('medicines'));
+        return view('livewire.transaction.create', [
+            'batches' => $batches,
+        ]);
     }
 }

@@ -7,14 +7,20 @@ use App\Models\Medicine;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
+use App\Imports\MedicinesImport;
+use Livewire\WithFileUploads;
+use Maatwebsite\Excel\Facades\Excel;
 
 #[Layout('layouts.app')]
 class Index extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
+
+    public bool $showImportModal = false;
+    public $uploadFile;
 
     // Properti untuk form
-    public $name, $barcode, $category_id, $stock, $price, $unit, $expired_date, $cost_price;
+    public $name, $barcode, $category_id, $stock, $price, $unit, $margin, $cost_price;
 
     public $medicine_id;
     public bool $isEditMode = false;
@@ -24,6 +30,27 @@ class Index extends Component
     public $search = '';
     public string $sortField = 'name';
     public string $sortDirection = 'asc';
+    public $selectedMedicines = [];
+
+    public function openImportModal()
+    {
+        $this->dispatch('open-modal', 'import-modal');
+    }
+    public function importExcel()
+    {
+        $this->validate([
+            'uploadFile' => 'required|file|mimes:xlsx,csv'
+        ]);
+
+        try {
+            Excel::import(new MedicinesImport, $this->uploadFile);
+            session()->flash('success', 'Data obat berhasil diimpor.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage());
+        }
+
+        $this->dispatch('close-modal', 'import-modal');
+    }
     public function sortBy(string $field)
     {
         // Jika klik kolom yang sama, balik arahnya
@@ -56,11 +83,10 @@ class Index extends Component
         $this->name = $medicine->name;
         $this->barcode = $medicine->barcode;
         $this->category_id = $medicine->category_id;
-        $this->stock = $medicine->stock;
         $this->price = $medicine->price;
         $this->cost_price = $medicine->cost_price;
+        $this->margin = $medicine->margin;
         $this->unit = $medicine->unit;
-        $this->expired_date = $medicine->expired_date ? $medicine->expired_date->format('Y-m-d') : null;
         $this->isEditMode = true;
         $this->dispatch('open-modal', 'medicine-modal');
     }
@@ -72,19 +98,18 @@ class Index extends Component
             'name' => 'required|string|max:255',
             'barcode' => 'nullable|string|max:255',
             'category_id' => 'required|exists:categories,id',
-            'stock' => 'required|integer|min:0',
             'price' => 'required|numeric|min:0',
             'cost_price' => 'required|numeric|min:0',
+            'margin' => 'required|integer|min:0|max:100',
             'unit' => 'required|string|max:50',
-            'expired_date' => 'required|date',
         ]);
 
         if ($this->isEditMode) {
             $medicine = Medicine::findOrFail($this->medicine_id);
-            $medicine->update($this->only(['name', 'barcode', 'category_id', 'stock', 'price', 'cost_price', 'unit', 'expired_date']));
+            $medicine->update($this->only(['name', 'barcode', 'category_id', 'price', 'cost_price', 'margin', 'unit']));
             session()->flash('success', 'Data obat berhasil diperbarui.');
         } else {
-            Medicine::create($this->only(['name', 'barcode', 'category_id', 'stock', 'price', 'cost_price', 'unit', 'expired_date']));
+            Medicine::create($this->only(['name', 'barcode', 'category_id', 'price', 'cost_price', 'margin', 'unit']));
             session()->flash('success', 'Data obat berhasil ditambahkan.');
         }
 
@@ -122,11 +147,13 @@ class Index extends Component
             ->where('name', 'like', '%' . $this->search . '%')
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
+        $paginatedMedicineIds = $medicines->pluck('id')->all();
         $categories = Category::all();
 
         return view('livewire.medicine.index', [
             'medicines' => $medicines,
             'categories' => $categories,
+            'paginatedMedicineIds' => $paginatedMedicineIds,
         ]);
     }
 }

@@ -26,7 +26,7 @@ class Financial extends Component
     {
         // Ambil transaksi dalam rentang tanggal yang dipilih
         // Eager load relasi untuk menghindari N+1 problem
-        $transactions = Transaction::with('details.medicine')
+        $transactions = Transaction::with(['user', 'details.medicine', 'details.batch'])
             ->whereBetween('created_at', [$this->startDate, $this->endDate])
             ->latest()
             ->get();
@@ -38,12 +38,10 @@ class Financial extends Component
 
         // 2. Total Modal (Harga Pokok Penjualan)
         $totalCogs = 0;
-        foreach ($transactions as $transaction) {
-            foreach ($transaction->details as $detail) {
-                // HPP = harga beli obat * jumlah yang terjual
-                $totalCogs += $detail->medicine->cost_price * $detail->quantity;
-            }
-        }
+        $totalCogs = $transactions->flatMap->details->sum(function ($detail) {
+            // Jika karena suatu hal batch tidak tercatat, anggap HPP 0 agar tidak error
+            return ($detail->batch->purchase_price ?? 0) * $detail->quantity;
+        });
 
         // 3. Total Laba (Profit)
         $grossProfit = $totalRevenue - $totalCogs;

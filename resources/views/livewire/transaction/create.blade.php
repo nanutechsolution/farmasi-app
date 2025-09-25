@@ -22,19 +22,20 @@
                         <div class="mt-4 overflow-y-auto border rounded-md  sm:h-80 lg:h-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    @forelse ($medicines as $medicine)
-                                    <tr wire:click="addToCart({{ $medicine->id }})" class="cursor-pointer hover:bg-gray-100">
+                                    @forelse ($batches as $batch)
+                                    <tr wire:click="addToCart({{ $batch->id }})" class="cursor-pointer hover:bg-gray-100">
                                         <td class="px-6 py-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $medicine->name }}
+                                            <div class="text-sm font-medium text-gray-900">{{ $batch->medicine->name }}</div>
+                                            <div class="text-sm text-gray-500">
+                                                No. Batch: {{ $batch->batch_number ?? 'N/A' }} |
+                                                Stok: <span class="font-semibold">{{ $batch->quantity }}</span>
                                             </div>
-                                            <div class="text-sm text-gray-500">Stok: {{ $medicine->stock }}</div>
                                         </td>
                                         <td class="px-6 py-4 text-right">
-                                            <div class="text-sm font-semibold text-gray-900">Rp
-                                                {{ number_format($medicine->price, 0, ',', '.') }}</div>
+                                            <div class="text-sm font-semibold text-gray-900">Exp: {{ $batch->expired_date->format('d/m/Y') }}</div>
                                         </td>
                                     </tr>
-                                    @empty
+p                                    @empty
                                     <tr>
                                         <td colspan="2" class="px-6 py-4 text-center text-gray-500">
                                             @if (strlen($search) < 2) Ketik minimal 2 huruf untuk mencari... @else Obat tidak ditemukan. @endif </td>

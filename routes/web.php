@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Dashboard;
-use App\Livewire\Profile\Edit as ProfileEdit;
 use App\Livewire\Medicine\Index as MedicineIndex;
 use App\Livewire\Supplier\Index as SupplierIndex;
 use App\Livewire\Transaction\Create as TransactionCreate;
@@ -19,7 +18,7 @@ use App\Livewire\StockOpname\Index as StockOpnameIndex;
 use App\Livewire\StockOpname\Show as StockOpnameShow;
 use App\Livewire\Expense\Index as ExpenseIndex;
 use App\Livewire\Role\Index as RoleIndex;
-
+use App\Livewire\Purchase\PriceAssistant;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -58,6 +57,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('users', UserIndex::class)->middleware('permission:manage-users')->name('users.index');
     Route::get('roles', RoleIndex::class)->middleware('permission:manage-roles')->name('roles.index');
     Route::get('activity-log', ActivityLog::class)->middleware('permission:view-activity-log')->name('activity-log.index');
+
+    Route::get('medicines/export', [ReportController::class, 'exportMedicines'])
+        ->middleware(['permission:manage-medicines'])
+        ->name('medicines.export');
+
+    Route::get('medicines/print-labels', [ReportController::class, 'printBarcodeLabels'])
+        ->middleware(['permission:manage-medicines'])
+        ->name('medicines.print-labels');
+
+
+    Route::get('purchases/{purchase}/price-assistant', PriceAssistant::class)
+        ->middleware(['role:Admin|Apoteker'])
+        ->name('purchases.price-assistant');
 });
 
 // Route otentikasi (login, register, dll.)
