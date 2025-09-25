@@ -40,17 +40,28 @@
 
     <div class="py-6 px-2 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-7xl">
-            <div class="flex items-center space-x-4 mb-4">
-                <x-primary-button wire:click="create">Tambah Obat</x-primary-button>
-                <a href="{{ route('medicines.export') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <x-primary-button wire:click="create" class="w-full justify-center">
+                    Tambah Obat
+                </x-primary-button>
+
+                <a href="{{ route('medicines.export') }}" class="inline-flex justify-center items-center w-full px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     Ekspor ke Excel
                 </a>
-                <x-secondary-button wire:click="openImportModal">Impor dari Excel</x-secondary-button>
-                <a x-bind:href="'{{ route('medicines.print-labels') }}?medicines=' + selected.join(',')" x-bind:class="{ 'opacity-50 cursor-not-allowed': selected.length === 0 }" x-on:click="if (selected.length === 0) $event.preventDefault()" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-500 active:bg-gray-700">
-                    Cetak Label Terpilih (<span x-text="selected.length"></span>)
+
+                <x-secondary-button wire:click="openImportModal" class="w-full justify-center">
+                    Impor dari Excel
+                </x-secondary-button>
+
+                <a x-bind:href="'{{ route('medicines.print-labels') }}?medicines=' + selected.join(',')" x-bind:class="{ 'opacity-50 cursor-not-allowed': selected.length === 0 }" x-on:click="if (selected.length === 0) $event.preventDefault()" target="_blank" class="inline-flex justify-center items-center w-full px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-500 active:bg-gray-700 transition ease-in-out duration-150">
+                    Cetak Label (<span x-text="selected.length"></span>)
                 </a>
             </div>
-
+            <div class="flex items-center space-x-2 mb-4">
+                <input type="checkbox" x-on:click="toggleAll()" x-bind:checked="allSelected" class="rounded">
+                <label class="text-sm font-medium">Pilih Semua </label>
+            </div>
             <!-- Desktop Table -->
             <div class="hidden md:block overflow-x-auto bg-white shadow-sm sm:rounded-lg">
                 <table class="min-w-full bg-white">
@@ -114,20 +125,31 @@
                     {{ $medicines->links() }}
                 </div>
             </div>
-
-            <!-- Mobile Cards -->
-            <div class="md:hidden grid grid-cols-1 gap-4">
+            <div class="md:hidden space-y-4">
                 @forelse ($medicines as $medicine)
-                <div class="p-4 bg-white shadow-sm rounded-lg">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-lg font-semibold">{{ $medicine->name }}</h3>
-                        <span class="text-sm text-gray-500">{{ $medicine->category->name }}</span>
+                <div class="p-4 bg-white shadow-sm rounded-lg border">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" wire:model.live="selectedMedicines" value="{{ $medicine->id }}" class="rounded mt-1">
+                        <div class="flex-grow">
+                            <h3 class="text-lg font-semibold text-gray-900">{{ $medicine->name }}</h3>
+                            <p class="text-sm text-gray-500">{{ $medicine->category->name ?? 'N/A' }}</p>
+                        </div>
                     </div>
-                    <div class="flex justify-between mt-1">
-                        <span class="text-sm text-gray-600">Stok: {{ $medicine->stock }}</span>
-                        <span class="text-sm font-semibold text-gray-900">Rp {{ number_format($medicine->price, 0, ',', '.') }}</span>
+
+                    <div class="mt-4 pt-4 border-t space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-600">Total Stok:</span> <span class="font-bold">{{ $medicine->total_stock }} {{ $medicine->unit }}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-600">Harga Jual:</span> <span class="font-semibold">Rp {{ number_format($medicine->price) }}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-600">Harga Modal (Avg):</span> <span class="font-semibold">Rp {{ number_format($medicine->cost_price) }}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-600">Margin:</span> <span class="font-semibold">{{ $medicine->margin }}%</span></div>
+                        <div class="flex justify-between"><span class="text-gray-600">Barcode:</span> <span class="font-mono text-xs">{{ $medicine->barcode ?? '-' }}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-600">Kadaluarsa Terdekat:</span>
+                            <span class="font-semibold">
+                                {{ $medicine->next_expiry_date ? \Carbon\Carbon::parse($medicine->next_expiry_date)->format('d M Y') : '-' }}
+                            </span>
+                        </div>
                     </div>
-                    <div class="mt-3 flex justify-end space-x-2">
+
+                    <div class="mt-4 pt-4 border-t flex justify-end space-x-2">
                         <button wire:click="edit({{ $medicine->id }})" class="px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 text-sm">Edit</button>
                         <button wire:click="confirmDelete({{ $medicine->id }})" class="px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 text-sm">Hapus</button>
                     </div>
@@ -138,12 +160,10 @@
                 </div>
                 @endforelse
 
-                <!-- Pagination -->
                 <div class="mt-4">
                     {{ $medicines->links() }}
                 </div>
             </div>
-
         </div>
     </div>
     <x-modal name="import-modal" focusable>
