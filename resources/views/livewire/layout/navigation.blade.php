@@ -80,7 +80,7 @@ new class extends Component {
                             </x-slot>
                             <x-slot name="content">
                                 @can('manage-medicines')
-                                <x-dropdown-link :href="route('medicines.index')" wire:navigate>{{ __('Obat') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('medicines.index')" wire:navigate>{{ __('Obat & Alkes') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('categories.index')" wire:navigate>{{ __('Kategori') }}</x-dropdown-link>
                                 @endcan
                                 @can('manage-suppliers')
@@ -192,7 +192,7 @@ new class extends Component {
                     @endcan
                     @can('perform-stock-opname')
                     <x-responsive-nav-link :href="route('stock-opnames.create')">Buat Stok Opname</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('stock-opnames.index')">Riwayat Stok Opname</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('stock-opnames.index')">{{ __('Riwayat Stok Opname') }}</x-responsive-nav-link>
                     @endcan
                 </div>
             </div>
@@ -200,11 +200,11 @@ new class extends Component {
             <!-- Mobile Manajemen Data -->
             <div wire:ignore>
                 <button @click="openManajemen = !openManajemen" class="w-full text-left px-4 py-2 font-medium text-gray-700">
-                    Manajemen Data
+                    {{ __('Manajemen Data') }}
                 </button>
                 <div x-show="openManajemen" x-transition class="pl-4">
                     @can('manage-medicines')
-                    <x-responsive-nav-link :href="route('medicines.index')">{{ __('Obat') }}</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('medicines.index')">{{ __('Obat & Alkes') }}</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('categories.index')">{{ __('Kategori') }}</x-responsive-nav-link>
                     @endcan
                     @can('manage-suppliers')
@@ -232,6 +232,9 @@ new class extends Component {
                     @can('manage-roles')
                     <x-responsive-nav-link :href="route('roles.index')">Manajemen Role</x-responsive-nav-link>
                     @endcan
+                    @role('Admin')
+                    <x-responsive-nav-link :href="route('settings.index')">Pengaturan</x-responsive-nav-link>
+                    @endrole
                     @can('view-activity-log')
                     <x-responsive-nav-link :href="route('activity-log.index')">Log Aktivitas</x-responsive-nav-link>
                     @endcan
