@@ -11,6 +11,11 @@ use App\Livewire\Purchase\Create as PurchaseCreate;
 use App\Livewire\Report\Financial as FinancialReport;
 use App\Livewire\User\Index as UserIndex;
 use App\Livewire\Log\ActivityLog;
+use App\Livewire\StockOpname\Create as StockOpnameCreate;
+use App\Livewire\StockOpname\Index as StockOpnameIndex;
+use App\Livewire\StockOpname\Show as StockOpnameShow;
+use App\Livewire\Expense\Index as ExpenseIndex;
+use App\Http\Controllers\ReportController;
 
 Route::view('/', 'welcome');
 Route::get('dashboard', Dashboard::class)
@@ -55,4 +60,25 @@ Route::get('users', UserIndex::class)
 Route::get('activity-log', ActivityLog::class)
     ->middleware(['role:Admin'])
     ->name('activity-log.index');
+
+Route::get('stock-opnames/create', StockOpnameCreate::class)
+    ->middleware(['role:Admin|Apoteker'])
+    ->name('stock-opnames.create');
+
+Route::get('stock-opnames', StockOpnameIndex::class)
+    ->middleware(['role:Admin|Apoteker'])
+    ->name('stock-opnames.index');
+
+Route::get('stock-opnames/{stockOpname}', StockOpnameShow::class)
+    ->middleware(['role:Admin|Apoteker'])
+    ->name('stock-opnames.show');
+
+Route::get('expenses', ExpenseIndex::class)
+    ->middleware(['role:Admin|Apoteker'])
+    ->name('expenses.index');
+
+
+Route::get('reports/financial/print', [ReportController::class, 'printFinancialReport'])
+    ->middleware(['role:Admin|Apoteker'])
+    ->name('reports.financial.print');
 require __DIR__ . '/auth.php';

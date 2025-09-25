@@ -6,18 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class TransactionDetail extends Model
+class StockOpnameDetail extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['transaction_id', 'medicine_id', 'quantity', 'price'];
+    protected $fillable = ['stock_opname_id', 'medicine_id', 'system_stock', 'physical_stock', 'difference'];
 
     public function medicine(): BelongsTo
     {
         return $this->belongsTo(Medicine::class);
-    }
-    public function transaction(): BelongsTo
-    {
-        return $this->belongsTo(Transaction::class);
     }
 }

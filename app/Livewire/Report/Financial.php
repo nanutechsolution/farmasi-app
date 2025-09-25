@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report;
 
+use App\Models\Expense;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Livewire\Component;
@@ -47,11 +48,19 @@ class Financial extends Component
         // 3. Total Laba (Profit)
         $grossProfit = $totalRevenue - $totalCogs;
 
+        // 4. Total Biaya Operasional
+        $totalExpenses = Expense::whereBetween('expense_date', [$this->startDate, $this->endDate])
+            ->sum('amount');
+
+        // 5. Laba Bersih (Net Profit)
+        $netProfit = $grossProfit - $totalExpenses;
         return view('livewire.report.financial', [
             'transactions' => $transactions,
             'totalRevenue' => $totalRevenue,
             'totalCogs' => $totalCogs,
             'grossProfit' => $grossProfit,
+            'totalExpenses' => $totalExpenses,
+            'netProfit' => $netProfit,
         ]);
     }
 }
