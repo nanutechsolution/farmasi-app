@@ -23,11 +23,18 @@ new class extends Component {
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
-                <div class="shrink-0 flex items-center">
+                <div class="flex items-center space-x-2">
+                    <!-- Logo -->
                     <a href="{{ route('dashboard') }}" wire:navigate>
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                        <x-application-logo class="h-9 w-auto fill-current text-gray-800" />
                     </a>
+
+                    <!-- Nama aplikasi, hanya muncul di mobile -->
+                    <span class="text-lg font-semibold text-gray-800 sm:hidden">
+                        Farmasi Medika
+                    </span>
                 </div>
+
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
@@ -161,7 +168,7 @@ new class extends Component {
             </div>
 
             <!-- Mobile Manajemen Data -->
- <div wire:ignore>
+            <div wire:ignore>
                 <button @click="openManajemen = !openManajemen" class="w-full text-left px-4 py-2 font-medium text-gray-700">
                     Manajemen Data
                 </button>

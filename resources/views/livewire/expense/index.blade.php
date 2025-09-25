@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+     <div class="py-6 px-2 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div class="p-6 bg-white shadow-sm sm:rounded-lg">
                 @if (session()->has('success'))

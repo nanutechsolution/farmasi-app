@@ -60,8 +60,7 @@ class Index extends Component
         $this->price = $medicine->price;
         $this->cost_price = $medicine->cost_price;
         $this->unit = $medicine->unit;
-        $this->expired_date = $medicine->expired_date;
-
+        $this->expired_date = $medicine->expired_date ? $medicine->expired_date->format('Y-m-d') : null;
         $this->isEditMode = true;
         $this->dispatch('open-modal', 'medicine-modal');
     }
@@ -71,7 +70,7 @@ class Index extends Component
         // Validasi data
         $this->validate([
             'name' => 'required|string|max:255',
-            'barcode' => 'string|max:255',
+            'barcode' => 'nullable|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'stock' => 'required|integer|min:0',
             'price' => 'required|numeric|min:0',
@@ -99,8 +98,16 @@ class Index extends Component
 
     public function destroy()
     {
-        Medicine::findOrFail($this->medicineIdToDelete)->delete();
-        session()->flash('success', 'Data obat berhasil dihapus.');
+        try {
+            Medicine::findOrFail($this->medicineIdToDelete)->delete();
+            session()->flash('success', 'Data obat berhasil dihapus.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23000') {
+                session()->flash('error', 'Obat ini tidak bisa dihapus karena masih ada transaksi terkait.');
+            } else {
+                session()->flash('error', 'Terjadi kesalahan saat menghapus data obat.');
+            }
+        }
         $this->dispatch('close-modal', 'medicine-delete-modal');
     }
 
