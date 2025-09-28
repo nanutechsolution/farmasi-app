@@ -83,7 +83,6 @@
             </div>
         </div>
     </div>
-
     {{-- Modal Setting Widget --}}
     <x-modal name="settings-modal" focusable>
         <div class="p-6 space-y-6">
@@ -92,18 +91,29 @@
                     🛠️ Atur Tampilan Dashboard
                 </h2>
                 <p class="mt-1 text-sm text-gray-600">
-                    Pilih widget yang ingin Anda tampilkan di dashboard.
+                    Aktifkan atau nonaktifkan widget sesuai kebutuhan Anda.
                 </p>
             </div>
 
-            {{-- Daftar widget --}}
+            {{-- Daftar widget dengan toggle --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 @foreach ($allWidgets as $widget)
-                <label class="flex items-center p-4 space-x-3 border rounded-xl cursor-pointer transition hover:bg-gray-50
-                        {{ collect($activeWidgets)->contains('key', $widget['key']) ? 'bg-indigo-50 border-indigo-400' : 'bg-white border-gray-200' }}">
-                    <input type="checkbox" wire:click="toggleWidget('{{ $widget['key'] }}')" {{ collect($activeWidgets)->contains('key', $widget['key']) ? 'checked' : '' }} class="rounded text-indigo-600 focus:ring-indigo-500">
+                <div class="flex items-center justify-between p-4 rounded-lg border transition hover:bg-gray-50
+                    {{ collect($activeWidgets)->contains('key', $widget['key']) ? 'bg-indigo-50 border-indigo-400' : 'bg-white border-gray-200' }}">
+
                     <span class="font-medium text-gray-800">{{ $widget['name'] }}</span>
-                </label>
+
+                    {{-- Toggle Switch --}}
+                    <button type="button" wire:click="toggleWidget('{{ $widget['key'] }}')" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none
+                        {{ collect($activeWidgets)->contains('key', $widget['key']) ? 'bg-indigo-600' : 'bg-gray-300' }}">
+
+                        <span class="sr-only">Toggle {{ $widget['name'] }}</span>
+
+                        <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                            {{ collect($activeWidgets)->contains('key', $widget['key']) ? 'translate-x-6' : 'translate-x-1' }}">
+                        </span>
+                    </button>
+                </div>
                 @endforeach
             </div>
 
@@ -115,4 +125,5 @@
             </div>
         </div>
     </x-modal>
+
 </div>
