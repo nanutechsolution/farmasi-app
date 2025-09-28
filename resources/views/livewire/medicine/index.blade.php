@@ -58,7 +58,7 @@
                     Cetak Label (<span x-text="selected.length"></span>)
                 </a>
             </div>
-            <div class="flex items-center space-x-2 mb-4">
+            <div class=" items-center space-x-2 mb-4 flex md:hidden">
                 <input type="checkbox" x-on:click="toggleAll()" x-bind:checked="allSelected" class="rounded">
                 <label class="text-sm font-medium">Pilih Semua </label>
             </div>

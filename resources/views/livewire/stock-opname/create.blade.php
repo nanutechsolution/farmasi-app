@@ -30,6 +30,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-2 text-left">Nama Obat</th>
+                                <th class="px-4 py-2 text-left">Lokasi</th>
                                 <th class="px-4 py-2 text-left">No. Batch</th>
                                 <th class="px-4 py-2 text-center">Tgl. Kadaluarsa</th>
                                 <th class="px-4 py-2 text-center">Stok Sistem</th>
@@ -41,6 +42,7 @@
                             @forelse ($batches as $batch)
                             <tr wire:key="batch-{{ $batch->id }}">
                                 <td class="px-4 py-2">{{ $batch->medicine->name }}</td>
+                                <td class="px-4 py-2">{{ $batch->location->name }}</td>
                                 <td class="px-4 py-2">{{ $batch->batch_number ?? 'N/A' }}</td>
                                 <td class="px-4 py-2 text-center">{{ $batch->expired_date->format('d/m/Y') }}</td>
                                 <td class="px-4 py-2 text-center font-semibold">{{ $batch->quantity }}</td>

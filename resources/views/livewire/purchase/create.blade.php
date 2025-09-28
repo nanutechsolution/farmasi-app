@@ -43,6 +43,7 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-4 py-2 text-left">Nama Obat</th>
+                                    <th class="px-4 py-2 text-left">Lokasi</th>
                                     <th class="px-4 py-2 text-left">No. Batch</th>
                                     <th class="px-4 py-2 text-left">Jumlah</th>
                                     <th class="px-4 py-2 text-left">Harga Beli</th>
@@ -54,6 +55,15 @@
                                 @forelse ($purchaseList as $index => $item)
                                 <tr class="border-b" wire:key="item-{{$index}}">
                                     <td class="px-4 py-2">{{ $item['name'] }}</td>
+                                    <td class="px-2 py-2">
+                                        <select wire:model="purchaseList.{{ $index }}.location_id" class="w-full text-sm border-gray-300 rounded-md">
+                                            <option value="">Pilih</option>
+                                            @foreach ($locations as $location)
+                                            <option value="{{ $location->id }}">{{ $location->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <x-input-error :messages="$errors->get('purchaseList.'.$index.'.location_id')" class="mt-1" />
+                                    </td>
                                     <td>
                                         <x-text-input type="text" wire:model="purchaseList.{{ $index }}.batch_number" class="w-32 text-sm" />
                                     </td>

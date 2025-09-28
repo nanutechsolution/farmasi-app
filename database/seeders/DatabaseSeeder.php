@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Supplier;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -15,17 +16,14 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             PermissionSeeder::class,
             UserSeeder::class,
+
+                // Data Master
+            RealisticCategorySeeder::class,
+            RealisticLocationSeeder::class,
+            RealisticMedicineSeeder::class,
+            SupplierSeeder::class,
+            SettingsSeeder::class,
         ]);
 
-        // Membuat data dummy menggunakan factory
-        // Pastikan Anda sudah mendefinisikan factory untuk Category, Supplier, dan Medicine
-        \App\Models\Supplier::factory(2)->create();
-        $this->call([
-            RealisticMedicineSeeder::class,
-        ]);
-        $this->call([
-            // TransactionSeeder::class,
-               SettingsSeeder::class,
-        ]);
     }
 }

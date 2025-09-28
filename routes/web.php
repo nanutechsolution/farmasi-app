@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\System\LogViewer;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Dashboard;
 use App\Livewire\Medicine\Index as MedicineIndex;
@@ -21,7 +22,8 @@ use App\Livewire\Role\Index as RoleIndex;
 use App\Livewire\Purchase\PriceAssistant;
 use App\Livewire\Category\Index as CategoryIndex;
 use App\Livewire\Setting\Index as SettingIndex;
-
+use App\Livewire\Location\Index as LocationIndex;
+use App\Livewire\Report\Index as AttendanceReport;
 
 
 
@@ -36,7 +38,9 @@ Route::view('/', 'welcome');
 
 // Grup untuk semua route yang memerlukan login
 Route::middleware(['auth', 'verified'])->group(function () {
-
+    Route::get('reports/attendance', AttendanceReport::class)
+        ->middleware(['role:Admin'])
+        ->name('reports.attendance');
     // Rute dasar
     Route::get('dashboard', Dashboard::class)->name('dashboard');
     Route::view('profile', 'profile')->name('profile');
@@ -82,6 +86,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('settings', SettingIndex::class)
         ->middleware(['role:Admin'])
         ->name('settings.index');
+
+    Route::get('locations', LocationIndex::class)
+        ->middleware(['permission:manage-medicines'])
+        ->name('locations.index');
+
+    Route::get('system/logs', LogViewer::class)
+        ->middleware(['role:Admin'])
+        ->name('system.logs');
+});
+
+Route::get('tes-error', function () {
+    // Baris ini akan sengaja menyebabkan error
+    throw new \Exception('Ini adalah pesan error untuk tes.');
 });
 // Route otentikasi (login, register, dll.)
 require __DIR__ . '/auth.php';

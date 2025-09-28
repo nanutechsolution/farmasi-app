@@ -28,7 +28,9 @@
                                             <div class="text-sm font-medium text-gray-900">{{ $batch->medicine->name }}</div>
                                             <div class="text-sm text-gray-500">
                                                 No. Batch: {{ $batch->batch_number ?? 'N/A' }} |
-                                                Stok: <span class="font-semibold">{{ $batch->quantity }}</span>
+                                                Stok: <span class="font-semibold">{{ $batch->quantity }}</span> |
+                                                Lokasi: <span class="font-semibold">{{ $batch->location->name ?? 'N/A' }}
+                                                </span>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 text-right">

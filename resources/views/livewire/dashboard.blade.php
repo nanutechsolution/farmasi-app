@@ -1,96 +1,118 @@
-<div>
-    <x-slot name="header">
-        <h2 class="text-xl font-semibold leading-tight text-gray-800">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+<div class="col-span-1 mb-6 sm:col-span-2 lg:col-span-4" x-data="{
+        status: 'idle', // idle, getting_location, submitting, error, success
+        message: '',
+        getLocationAndClockIn() {
+            this.status = 'getting_location';
+            this.message = 'Sedang mendapatkan lokasi Anda...';
 
-    <div class="py-6 px-2 sm:px-6 lg:px-8">
+            if (!navigator.geolocation) {
+                this.status = 'error';
+                this.message = 'Browser Anda tidak mendukung Geolocation.';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    this.status = 'submitting';
+                    this.message = 'Lokasi didapatkan, mengirim data...';
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    @this.call('clockIn', lat, lon);
+                },
+                () => {
+                    this.status = 'error';
+                    this.message = 'Tidak bisa mendapatkan lokasi. Pastikan Anda mengizinkan akses lokasi.';
+                }
+            );
+        }
+    }" @attendance-error.window="status = 'error'; message = $event.detail;" @attendance-success.window="status = 'success'; message = $event.detail; setTimeout(() => status = 'idle', 3000);">
+    <div class="p-6 overflow-hidden bg-white rounded-lg shadow-sm">
+        <h3 class="text-lg font-semibold">Absensi Hari Ini</h3>
+        @if($isClockedIn)
+        <div class="mt-4">
+            <p class="text-green-600">Anda sudah clock in pada: <strong>{{ $todaysAttendance->clock_in_time->format('H:i:s') }}</strong></p>
+            <x-danger-button wire:click="clockOut" class="mt-4">Clock Out</x-danger-button>
+        </div>
+        @elseif($todaysAttendance && $todaysAttendance->clock_out_time)
+        <div class="mt-4">
+            <p class="text-gray-600">Terima kasih! Anda sudah clock out hari ini pada: <strong>{{ $todaysAttendance->clock_out_time->format('H:i:s') }}</strong></p>
+        </div>
+        @else
+        <div class="mt-4">
+            <x-primary-button @click="getLocationAndClockIn()" x-bind:disabled="status !== 'idle' && status !== 'error'">
+                <svg x-show="status === 'getting_location' || status === 'submitting'" class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24" ...>...</svg>
+                <span x-text="status === 'idle' || status === 'error' ? 'Clock In Sekarang' : message"></span>
+            </x-primary-button>
+            <p x-show="message" class="mt-2 text-sm" :class="{ 'text-red-600': status === 'error', 'text-green-600': status === 'success', 'text-gray-600': status !== 'error' && status !== 'success' }" x-text="message"></p>
+        </div>
+        @endif
+    </div>
+    <div class="py-6 px-2 sm:px-6 lg:px-8 space-y-2">
+        {{-- Tombol setting --}}
+        <div class="flex justify-end">
+            <x-secondary-button wire:click="showSettingsModal">
+                ⚙️ Kustomisasi Dashboard
+            </x-secondary-button>
+        </div>
+        {{-- Grid widget --}}
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-
-                <div class="p-6 overflow-hidden bg-white rounded-lg shadow-sm">
-                    <h3 class="text-sm font-medium text-gray-500 truncate">Total Jenis Obat</h3>
-                    <p class="mt-1 text-3xl font-semibold text-gray-900">{{ $medicineCount }}</p>
-                    <a href="{{ route('medicines.index') }}" class="mt-2 text-sm text-indigo-600 hover:text-indigo-900">Lihat Detail</a>
+            <div wire:sortable="updateWidgetOrder" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($activeWidgets as $widget)
+                <div wire:sortable.item="{{ $widget['key'] }}" wire:key="widget-{{ $widget['key'] }}" class="@if ($widget['key'] === 'sales-chart') col-span-1 sm:col-span-2 lg:col-span-4 @endif">
+                    <div wire:sortable.handle class="cursor-move h-full">
+                        @switch($widget['key'])
+                        @case('total-medicines')
+                        <x-widgets.total-medicines :count="$medicineCount" />
+                        @break
+                        @case('total-suppliers')
+                        <x-widgets.total-suppliers :count="$supplierCount" />
+                        @break
+                        @case('low-stock')
+                        <x-widgets.low-stock :count="$lowStockCount" />
+                        @break
+                        @case('expiring-soon')
+                        <x-widgets.expiring-soon :count="$expiringSoonCount" />
+                        @break
+                        @case('sales-chart')
+                        <x-widgets.sales-chart :labels="$salesLabels" :data="$salesData" />
+                        @break
+                        @endswitch
+                    </div>
                 </div>
-
-                <div class="p-6 overflow-hidden bg-white rounded-lg shadow-sm">
-                    <h3 class="text-sm font-medium text-gray-500 truncate">Total Supplier</h3>
-                    <p class="mt-1 text-3xl font-semibold text-gray-900">{{ $supplierCount }}</p>
-                    <a href="{{ route('suppliers.index') }}" class="mt-2 text-sm text-indigo-600 hover:text-indigo-900">Lihat Detail</a>
-                </div>
-
-                <div class="p-6 overflow-hidden bg-yellow-100 rounded-lg shadow-sm">
-                    <h3 class="text-sm font-medium text-yellow-800 truncate">Obat Stok Menipis</h3>
-                    <p class="mt-1 text-3xl font-semibold text-yellow-900">{{ $lowStockCount }}</p>
-                    <a href="{{ route('medicines.index') }}" class="mt-2 text-sm text-yellow-700 hover:text-yellow-900">Periksa Stok</a>
-                </div>
-
-                <div class="p-6 overflow-hidden bg-red-100 rounded-lg shadow-sm">
-                    <h3 class="text-sm font-medium text-red-800 truncate">Obat Akan Kadaluarsa</h3>
-                    <p class="mt-1 text-3xl font-semibold text-red-900">{{ $expiringSoonCount }}</p>
-                    <a href="{{ route('medicines.index') }}" class="mt-2 text-sm text-red-700 hover:text-red-900">Periksa Tanggal</a>
-                </div>
-
-            </div>
-            <div class="grid grid-cols-1  gap-6  lg:grid-cols-2 mt-8 overflow-hidden bg-white p-6 shadow-sm sm:rounded-lg">
-                <div class="mt-4" wire:ignore x-data="chartComponent(@js($salesLabels),
-                    @js($salesData))" x-init="init()">
-                    <h3 class="text-lg font-semibold text-gray-800">Tren Penjualan 7 Hari Terakhir</h3>
-                    <canvas x-ref="chart"></canvas>
-                </div>
+                @endforeach
             </div>
         </div>
     </div>
+
+    {{-- Modal Setting Widget --}}
+    <x-modal name="settings-modal" focusable>
+        <div class="p-6 space-y-6">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    🛠️ Atur Tampilan Dashboard
+                </h2>
+                <p class="mt-1 text-sm text-gray-600">
+                    Pilih widget yang ingin Anda tampilkan di dashboard.
+                </p>
+            </div>
+
+            {{-- Daftar widget --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                @foreach ($allWidgets as $widget)
+                <label class="flex items-center p-4 space-x-3 border rounded-xl cursor-pointer transition hover:bg-gray-50
+                        {{ collect($activeWidgets)->contains('key', $widget['key']) ? 'bg-indigo-50 border-indigo-400' : 'bg-white border-gray-200' }}">
+                    <input type="checkbox" wire:click="toggleWidget('{{ $widget['key'] }}')" {{ collect($activeWidgets)->contains('key', $widget['key']) ? 'checked' : '' }} class="rounded text-indigo-600 focus:ring-indigo-500">
+                    <span class="font-medium text-gray-800">{{ $widget['name'] }}</span>
+                </label>
+                @endforeach
+            </div>
+
+            {{-- Tombol selesai --}}
+            <div class="flex justify-end">
+                <x-primary-button x-on:click="$dispatch('close-modal', 'settings-modal')">
+                    ✅ Selesai
+                </x-primary-button>
+            </div>
+        </div>
+    </x-modal>
 </div>
-<script>
-    function chartComponent(labels, data) {
-        return {
-            labels: labels
-            , data: data
-            , init() {
-                console.log(this.labels, this.data);
-
-                new Chart(this.$refs.chart, {
-                    type: 'line'
-                    , data: {
-                        labels: this.labels
-                        , datasets: [{
-                            label: 'Omzet Penjualan'
-                            , data: this.data
-                            , borderColor: 'rgba(75, 192, 192, 1)'
-                            , backgroundColor: 'rgba(75, 192, 192, 0.2)'
-                            , borderWidth: 2
-                            , tension: 0.3
-                            , fill: true
-                        }]
-                    }
-                    , options: {
-                        responsive: true
-                        , plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return 'Rp ' + context.parsed.y.toLocaleString('id-ID');
-                                    }
-                                }
-                            }
-                        }
-                        , scales: {
-                            y: {
-                                beginAtZero: true
-                                , ticks: {
-                                    callback: function(value) {
-                                        return 'Rp ' + value.toLocaleString('id-ID');
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-</script>

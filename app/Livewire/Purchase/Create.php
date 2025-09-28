@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Livewire\Purchase;
-
+use App\Models\Location;
 use App\Models\Medicine;
 use App\Models\MedicineBatch;
 use App\Models\Purchase;
@@ -20,10 +20,11 @@ class Create extends Component
     public $search = '';
     public $purchaseList = [];
     public $total = 0;
-
+    public $locations;
     public function mount()
     {
         $this->suppliers = Supplier::all();
+        $this->locations = Location::all();
     }
 
     // Mengubah cara item ditambahkan ke list
@@ -33,6 +34,7 @@ class Create extends Component
         $this->purchaseList[] = [
             'medicine_id' => $medicine->id,
             'name' => $medicine->name,
+            'location_id' => '',
             'batch_number' => '',
             'quantity' => 1,
             'purchase_price' => $medicine->cost_price, // Harga beli awal kita samakan dgn harga jual
@@ -57,8 +59,8 @@ class Create extends Component
     private function calculateTotal()
     {
         $this->total = collect($this->purchaseList)->sum(function ($item) {
-            $price = is_numeric($item['purchase_price']) ? (float)$item['purchase_price'] : 0;
-            $quantity = is_numeric($item['quantity']) ? (int)$item['quantity'] : 0;
+            $price = is_numeric($item['purchase_price']) ? (float) $item['purchase_price'] : 0;
+            $quantity = is_numeric($item['quantity']) ? (int) $item['quantity'] : 0;
             return $price * $quantity;
         });
     }
@@ -69,6 +71,7 @@ class Create extends Component
         $this->validate([
             'supplier_id' => 'required|exists:suppliers,id',
             'purchaseList' => 'required|array|min:1',
+            'purchaseList.*.location_id' => 'required|exists:locations,id',
             'purchaseList.*.quantity' => 'required|integer|min:1',
             'purchaseList.*.purchase_price' => 'required|numeric|min:0',
             'purchaseList.*.expired_date' => 'required|date',
@@ -87,6 +90,7 @@ class Create extends Component
                 // BUAT RECORD BATCH BARU, BUKAN LAGI MENAMBAH STOK
                 MedicineBatch::create([
                     'medicine_id' => $item['medicine_id'],
+                      'location_id' => $item['location_id'],
                     'batch_number' => $item['batch_number'],
                     'quantity' => $item['quantity'],
                     'purchase_price' => $item['purchase_price'],

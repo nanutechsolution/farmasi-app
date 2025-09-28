@@ -12,6 +12,7 @@ class MedicineBatch extends Model
 
     protected $fillable = [
         'medicine_id',
+        'location_id',
         'batch_number',
         'quantity',
         'expired_date',
@@ -26,5 +27,10 @@ class MedicineBatch extends Model
     public function medicine(): BelongsTo
     {
         return $this->belongsTo(Medicine::class);
+    }
+
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 }
